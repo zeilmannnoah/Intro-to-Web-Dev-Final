@@ -1,0 +1,13 @@
+#stoplight {
+    width: 50%;
+}
+
+#display {
+    width: 852px;
+    height: 480px;
+}
+
+.background-img {
+    background-image: url("../imgs/background.jpg");
+    background-repeat: no-repeat;
+}
