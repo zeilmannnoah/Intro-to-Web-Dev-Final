@@ -17,11 +17,11 @@ display.addEventListener("load", function() {
     this.contentDocument.head.appendChild(css);
     this.contentDocument.body.classList.add("background-img");
 
-    car1.setAttribute("src", "../resources/imgs/car-1.png");
+    car1.setAttribute("src", "./resources/imgs/car-1.png");
     car1.setAttribute("alt", "car 1");
     car1.setAttribute("id", "car1");
     car1.classList.add("cars");
-    car2.setAttribute("src", "../resources/imgs/car-2.png");
+    car2.setAttribute("src", "./resources/imgs/car-2.png");
     car2.setAttribute("alt", "car 2");
     car2.setAttribute("id", "car2");
     car2.classList.add("cars");
@@ -30,11 +30,11 @@ display.addEventListener("load", function() {
     lightPole.setAttribute("id", "pole");
 
 
-    flag1.setAttribute("src", "../resources/imgs/flag.png");
+    flag1.setAttribute("src", "./resources/imgs/flag.png");
     flag1.setAttribute("alt", "Finish Line");
     flag1.setAttribute("id", "flag1");
     flag1.classList.add("flags");
-    flag2.setAttribute("src", "../resources/imgs/flag.png");
+    flag2.setAttribute("src", "./resources/imgs/flag.png");
     flag1.setAttribute("alt", "Finish Line");
     flag2.setAttribute("id", "flag2");
     flag2.classList.add("flags");
@@ -51,17 +51,17 @@ display.addEventListener("load", function() {
 
 function nextLight(element) {
     if (element.getAttribute("data-light") === "stop"){
-        element.setAttribute("src", "../resources/imgs/traffic-light-slow.png");
+        element.setAttribute("src", "./resources/imgs/traffic-light-slow.png");
         element.setAttribute("alt", "slow");
         element.setAttribute("data-light", "slow");
     }
     else if (element.getAttribute("data-light") === "slow"){
-        element.setAttribute("src", "../resources/imgs/traffic-light-go.png");
+        element.setAttribute("src", "./resources/imgs/traffic-light-go.png");
         element.setAttribute("alt", "go");
         element.setAttribute("data-light", "go");
     }
     else {
-        element.setAttribute("src", "../resources/imgs/traffic-light-stop.png");
+        element.setAttribute("src", "./resources/imgs/traffic-light-stop.png");
         element.setAttribute("alt", "stop");
         element.setAttribute("data-light", "stop");
     }
