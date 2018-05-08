@@ -1,21 +1,50 @@
 "use strict";
-let parentLight = document.getElementById("parentLight"),
+var lightsList = document.querySelectorAll(".parentLights"),
     display = document.getElementById("display"),
+    car1Display = document.getElementById("car1-display"),
+    car2Display = document.getElementById("car2-display"),
+    tieDisplay = document.getElementById("tie-display"),
+    textDisplay = document.getElementById("text-display"),
+    restartButton = document.getElementById("button"),
     playing = false,
-    winningCar;
+    winningCar = null,
+    parentLights = {
+        stop: lightsList[0],
+        slow: lightsList[1],
+        go: lightsList[2],
+        intervalId: null,
+    };
+
+restartButton.addEventListener("click", function() {
+    restartButton.disabled = true;
+    display.src = "about:blank";
+    car1Display.classList.add("d-none");
+    car2Display.classList.add("d-none");
+    tieDisplay.classList.add("d-none");
+    textDisplay.classList.add("d-none");
+    textDisplay.innerHTML = "";
+    winningCar = null;
+});
 
 display.src = "about:blank";
 display.addEventListener("load", function() {
-    let css = document.getElementById("mainCss").cloneNode(),
+    var css = document.getElementById("mainCss").cloneNode(),
+        bootstrap = document.getElementById("bootstrap").cloneNode(),
         lightPole = document.createElement("div"),
-        childLight = parentLight.cloneNode(),
         car1 = document.createElement("img"),
         car2 = car1.cloneNode(),
         flag1 = document.createElement("img"),
-        flag2 = flag1.cloneNode();
+        flag2 = flag1.cloneNode(),
+        childLights = {
+            stop: parentLights.stop.cloneNode(),
+            slow: parentLights.slow.cloneNode(),
+            go: parentLights.go.cloneNode(),
+        };
 
     this.contentDocument.head.appendChild(css);
+    this.contentDocument.head.appendChild(bootstrap);
     this.contentDocument.body.classList.add("background-img");
+    parentLights.childLights = childLights;
 
     car1.setAttribute("src", "./resources/imgs/car-1.png");
     car1.setAttribute("alt", "car 1");
@@ -26,7 +55,13 @@ display.addEventListener("load", function() {
     car2.setAttribute("id", "car2");
     car2.classList.add("cars");
 
-    childLight.setAttribute("id", "childLight");
+    childLights.stop.classList.add("childLights");
+    childLights.slow.classList.add("childLights", "d-none");
+    childLights.go.classList.add("childLights", "d-none");
+    childLights.stop.classList.remove("parentLights");
+    childLights.slow.classList.remove("parentLights");
+    childLights.go.classList.remove("parentLights");
+
     lightPole.setAttribute("id", "pole");
 
 
@@ -39,44 +74,60 @@ display.addEventListener("load", function() {
     flag2.setAttribute("id", "flag2");
     flag2.classList.add("flags");
 
-    lightPole.appendChild(childLight);
+    lightPole.appendChild(childLights.stop);
+    lightPole.appendChild(childLights.slow);
+    lightPole.appendChild(childLights.go);
     this.contentDocument.body.appendChild(car1);
     this.contentDocument.body.appendChild(car2);
     this.contentDocument.body.appendChild(flag1);
     this.contentDocument.body.appendChild(flag2);
     this.contentDocument.body.appendChild(lightPole);
 
-    parentLight.addEventListener("click", startCount, false);
+    parentLights.stop.addEventListener("click", function() {
+        var raceObj = {
+                car1: car1,
+                car2: car2,
+                finishLine: flag1.offsetLeft - flag1.offsetLeft * .12
+            };
+        if (!playing) {
+            playing = true;
+
+            startRace(parentLights, childLights, raceObj);
+        }
+    }, false);
 }, false);
 
-function nextLight(element) {
-    if (element.getAttribute("data-light") === "stop"){
-        element.setAttribute("src", "./resources/imgs/traffic-light-slow.png");
-        element.setAttribute("alt", "slow");
-        element.setAttribute("data-light", "slow");
-    }
-    else if (element.getAttribute("data-light") === "slow"){
-        element.setAttribute("src", "./resources/imgs/traffic-light-go.png");
-        element.setAttribute("alt", "go");
-        element.setAttribute("data-light", "go");
-    }
-    else {
-        element.setAttribute("src", "./resources/imgs/traffic-light-stop.png");
-        element.setAttribute("alt", "stop");
-        element.setAttribute("data-light", "stop");
-    }
+function startRace(parentLights, childLights, raceObj) {
+    window.setTimeout(function() {
+        if (!parentLights.stop.classList.contains("d-none")){
+            parentLights.slow.classList.remove("d-none");
+            parentLights.stop.classList.add("d-none");
+            childLights.slow.classList.remove("d-none");
+            childLights.stop.classList.add("d-none");
+            startRace(parentLights, childLights, raceObj)
+        }
+        else if (!parentLights.slow.classList.contains("d-none")){
+            parentLights.go.classList.remove("d-none");
+            parentLights.slow.classList.add("d-none");
+            childLights.go.classList.remove("d-none");
+            childLights.slow.classList.add("d-none");
+            raceCars(raceObj.car1, raceObj.car2, raceObj.finishLine);
+        }
+    }, 1500);
 }
 
 function raceCars(car1, car2, finishLine) {
     window.setTimeout(function () {
-        if (car1.offsetLeft <= finishLine || car2.offsetLeft <= finishLine) {
+        if (car1.offsetLeft <= finishLine && car2.offsetLeft <= finishLine) {
             car1.style.left = car1.offsetLeft + Math.floor((Math.random() * 10) + 1);
             car2.style.left = car2.offsetLeft + Math.floor((Math.random() * 10) + 1);
             raceCars(car1, car2, finishLine);
         }
         else {
             if (playing) {
-                winner(car1, car2, finishLine);
+                if (!winningCar) {
+                    winner(car1, car2, finishLine);
+                }
             }
             if (car1.offsetLeft <= display.offsetWidth || car2.offsetLeft <= display.offsetWidth) {
                 if (winningCar === "car1") {
@@ -94,36 +145,44 @@ function raceCars(car1, car2, finishLine) {
                 raceCars(car1, car2, finishLine);
             }
         }
-    }, 10);
+    }, 20);
 
-}
-
-function newGame() {
-    parentLight.removeEventListener("click", newGame);
-    display.src = "about:blank";
 }
 
 function winner(car1, car2, finishLine) {
-    let flags = display.contentDocument.querySelectorAll(".flags");
+    var flags = display.contentDocument.querySelectorAll(".flags"),
+        newStop = parentLights.stop.cloneNode();
 
     flags[0].classList.add("rotate");
     flags[1].classList.add("rotate");
 
-    flagLoop();
     playing = false;
-    parentLight.removeEventListener("click", startCount);
-    parentLight.addEventListener("click", newGame, false);
-    nextLight(parentLight);
-    nextLight(display.contentDocument.getElementById("childLight"));
+    restartButton.disabled = false;
+    flagLoop();
 
-    if (car1 >= finishLine && car2 >= finishLine) {
-        winningCar = "both";
+    parentLights.stop.parentNode.replaceChild(newStop, parentLights.stop);
+    parentLights.stop = newStop;
+
+    parentLights.stop.classList.remove("d-none");
+    parentLights.go.classList.add("d-none");
+    parentLights.childLights.stop.classList.remove("d-none");
+    parentLights.childLights.go.classList.add("d-none");
+
+    if (car1.offsetLeft >= finishLine && car2.offsetLeft >= finishLine) {
+        winningCar = [car1, car2];
+        tieDisplay.classList.remove("d-none");
     }
-    else if (car1 >= finishLine){
-        winningCar = "car1";
+    else if (car1.offsetLeft >= finishLine){
+        winningCar = car1;
+        textDisplay.innerHTML = "Red Car<br>Wins!";
+        car1Display.classList.remove("d-none");
+        textDisplay.classList.remove("d-none");
     }
     else {
-        winningCar = "car2";
+        winningCar = car2;
+        textDisplay.innerHTML = "Yellow Car<br>Wins!";
+        car2Display.classList.remove("d-none");
+        textDisplay.classList.remove("d-none");
     }
 
     function flagLoop() {
@@ -135,28 +194,5 @@ function winner(car1, car2, finishLine) {
                 flagLoop();
             }
         }, 1000);
-    }
-}
-
-function startCount() {
-    let childLight = display.contentDocument.getElementById("childLight"),
-        car1 = display.contentDocument.getElementById("car1"),
-        car2 = display.contentDocument.getElementById("car2"),
-        finishLine = display.contentDocument.getElementById("flag1").offsetLeft;
-
-    finishLine -= (finishLine * .12);
-
-    if (!playing) {
-        playing = true;
-
-        for (let i=0; i<2; i++) {
-            window.setTimeout(function () {
-                nextLight(parentLight);
-                nextLight(childLight);
-                if (i === 1) {
-                    raceCars(car1, car2, finishLine);
-                }
-            }, 1500 * (i+1));
-        }
     }
 }
